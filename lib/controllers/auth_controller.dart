@@ -66,27 +66,95 @@ class AuthController extends GetxController implements GetxService {
     return responseModel;
   }
 
-  Future<ResponseModel> passwordRequestReset(String email) async{
+  Future<ResponseModel> passwordRequestReset(String email) async {
     isLoading.value = true;
     late ResponseModel responseModel;
 
     Response response = await authRepo.passwordRequestReset(email);
-    if(response.statusCode == 200) {
-      var bodyToken =response.body['token'];
-      authRepo.saveUserToken(bodyToken);
-      responseModel = ResponseModel(true, bodyToken);
+    if (response.statusCode == 200) {
+      var bodyMessage = response.body['message'];
+      print(bodyMessage);
+      responseModel = ResponseModel(true, bodyMessage);
+
+      await authRepo.saveUserEmail(email);
+
       print(responseModel);
       isLoading.value = false;
-      Get.snackbar('Success', response.statusText ?? 'An Email link as been sent',
+      Get.toNamed(AppRoutes.OTP_SCREEN);
+      Get.snackbar('Success',
+          response.body['message'] ?? 'An OTP code has been sent to your email',
           snackPosition: SnackPosition.BOTTOM);
-
-    }else {
+    } else {
       isLoading.value = false;
       responseModel = ResponseModel(false, response.statusText!);
       Get.snackbar('Error', response.statusText!,
           snackPosition: SnackPosition.BOTTOM);
     }
     print(responseModel);
+    return responseModel;
+  }
+
+  Future<ResponseModel> verifyOtp(String otp) async {
+    isLoading.value = true;
+    ResponseModel responseModel;
+
+    String? email = authRepo.sharedPreferences.getString("email");
+    if (email == null) {
+      isLoading.value = false;
+      responseModel = ResponseModel(false, "Email not found");
+      Get.snackbar('Error', 'Email not found',
+          snackPosition: SnackPosition.BOTTOM);
+      return responseModel;
+    }
+    Response response = await authRepo.verifyOtp(email, otp);
+    if (response.statusCode == 200) {
+      var bodyMessage = response.body['message'];
+      responseModel = ResponseModel(true, bodyMessage);
+      isLoading.value = false;
+      Get.toNamed(AppRoutes.RESET_PASSWORD_SCREEN);
+      Get.snackbar('Success',
+          response.body['message'] ?? 'Your Otp has been verified successfully',
+          snackPosition: SnackPosition.BOTTOM);
+    } else {
+      isLoading.value = false;
+      responseModel = ResponseModel(false, response.statusText!);
+      Get.snackbar('Error', response.statusText!,
+          snackPosition: SnackPosition.BOTTOM);
+    }
+
+    return responseModel;
+  }
+
+  Future<ResponseModel> resetPassword(String newPassword) async {
+    isLoading.value = true;
+    late ResponseModel responseModel;
+    String? email = authRepo.sharedPreferences.getString("email");
+
+    if (email == null) {
+      isLoading.value = false;
+      responseModel = ResponseModel(false, "Email not found");
+      Get.snackbar('Error', 'Email not found',
+          snackPosition: SnackPosition.BOTTOM);
+      return responseModel;
+    }
+    Response response = await authRepo.resetPassword(email,newPassword);
+    if (response.statusCode == 200) {
+      var bodyMessage = response.body['message'];
+      responseModel = ResponseModel(true, bodyMessage);
+  
+      isLoading.value = false;
+      await authRepo.clearUserEmail();
+      Get.toNamed(AppRoutes.LOGIN_SCREEN);
+      Get.snackbar('Success',
+          response.body['message'] ?? 'Password has been reset successfully',
+          snackPosition: SnackPosition.BOTTOM);
+    } else {
+      isLoading.value = false;
+      responseModel = ResponseModel(false, response.body['error']);
+      Get.snackbar('Error', response.body['error'],
+          snackPosition: SnackPosition.BOTTOM);
+    }
+
     return responseModel;
   }
 }

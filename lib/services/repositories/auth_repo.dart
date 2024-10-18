@@ -29,6 +29,16 @@ class AuthRepo {
     return await apiClient
         .sendData(AppConstant.REQUEST_PASSWORD_RESET, {"email": email});
   }
+  Future<Response> verifyOtp(String email,String otp) async {
+    print('request otp repo');
+    return await apiClient
+        .sendData(AppConstant.VERIFY_OTP, {"email":email,"otp": otp});
+  }
+
+  Future<Response> resetPassword(String email,String newPassword) async {
+    print('password reset repo');
+    return await apiClient.sendData(AppConstant.RESET_PASSWORD,{"email":email,"newPassword": newPassword});
+  }
 
   Future<bool> saveUserToken(String token) async {
     apiClient.token = token;
@@ -51,5 +61,9 @@ class AuthRepo {
     } catch (e) {
       print("$e");
     }
+  }
+
+  Future<void> clearUserEmail() async {
+    await sharedPreferences.remove("email");
   }
 }

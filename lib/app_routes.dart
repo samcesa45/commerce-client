@@ -3,12 +3,16 @@ import 'package:gx_tutorial/screens/home_screen.dart';
 import 'package:gx_tutorial/users/authentication/forgot_password.dart';
 import 'package:gx_tutorial/users/authentication/login.dart';
 import 'package:gx_tutorial/users/authentication/signup.dart';
+import 'package:gx_tutorial/users/authentication/otp_screen.dart';
+import 'package:gx_tutorial/users/authentication/reset_password_screen.dart';
 
 abstract class AppRoutes {
   static const HOME_SCREEN = '/home';
   static const LOGIN_SCREEN = '/login';
   static const REGISTER_SCREEN = '/signup';
   static const FORGOT_PASSWORD_SCREEN = '/forgot-password';
+  static const OTP_SCREEN = '/otp';
+  static const RESET_PASSWORD_SCREEN = '/reset-password';
 
   static final routes = [
     GetPage(
@@ -29,6 +33,16 @@ abstract class AppRoutes {
     GetPage(
       name: FORGOT_PASSWORD_SCREEN,
       page: () => const ForgotPassword(),
+      transition: Transition.downToUp,
+    ),
+    GetPage(
+      name: OTP_SCREEN,
+      page: () => const OtpScreen(),
+      transition: Transition.downToUp,
+    ),
+    GetPage(
+      name: RESET_PASSWORD_SCREEN,
+      page: () => const ResetPasswordScreen(),
       transition: Transition.downToUp,
     ),
   ];
